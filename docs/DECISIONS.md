@@ -53,4 +53,11 @@
 | `lambda/cloudwatch.tf:43,63,84,113,133,147` | 6 |
 | `lambda-dlq/main.tf:113` | 1 |
 
-**Impact:** Without this revert, any consumer using AWS provider 5.x would get `Unsupported attribute` errors when referencing the module at v4.0.1+. This explains why v4.0.0/v4.0.1 were never consumed by the infrastructure repo.
+**Provider compatibility:**
+
+| Provider | `.name` | `.region` |
+|----------|---------|-----------|
+| 5.x (current) | Works (deprecated warning) | Does not exist — errors |
+| 6.x (future) | Removed — errors | Works |
+
+**Impact:** Without this revert, any consumer using AWS provider 5.x would get `Unsupported attribute` errors when referencing the module at v4.0.1+. This explains why v4.0.0/v4.0.1 were never consumed by the infrastructure repo. The deprecation warning on `.name` is accepted until the provider 6 upgrade, which is a separate effort.
