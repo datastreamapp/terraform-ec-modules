@@ -38,3 +38,19 @@
 
 **Rationale:** The v4.2.0 changes (`artifact_source`, count guards, `source_code_hash`) use no provider 6-specific features. Setting `>= 5.0` allows the infrastructure repo to consume v4.2.0 without a provider upgrade. The provider 6 upgrade is a separate effort.
 
+---
+
+### Revert Provider 6 Attribute Changes (2026-01-29)
+**Decision:** Reverted `data.aws_region.current.region` back to `data.aws_region.current.name` in `lambda` and `lambda-dlq` modules.
+
+**Finding:** Commit `42c1de5` ("chore: remove deprecated", author: will Farrell) changed 8 occurrences of `.name` to `.region` across 3 files. The attribute `.region` does not exist on `data.aws_region` in AWS provider 5.x — the correct attribute is `.name`. This change was part of the provider 6 preparation but introduced an incompatibility with provider 5.
+
+**Files affected:**
+
+| File | Occurrences |
+|------|------------|
+| `lambda/locals.tf:6` | 1 |
+| `lambda/cloudwatch.tf:43,63,84,113,133,147` | 6 |
+| `lambda-dlq/main.tf:113` | 1 |
+
+**Impact:** Without this revert, any consumer using AWS provider 5.x would get `Unsupported attribute` errors when referencing the module at v4.0.1+. This explains why v4.0.0/v4.0.1 were never consumed by the infrastructure repo.
