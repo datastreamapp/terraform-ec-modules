@@ -11,3 +11,30 @@
 
 **Reference:** [HashiCorp — Dependency Lock File](https://developer.hashicorp.com/terraform/language/files/dependency-lock)
 
+---
+
+### AWS Provider Constraint: >= 5.0 (2026-01-29)
+**Decision:** Relaxed AWS provider constraint from `>= 6.0` to `>= 5.0` for `lambda` and `lambda-dlq` modules.
+
+**Finding:** The `v4.0.0` tag (commit `b098cfc`) bumped all modules to `>= 6.0`, but this was **never deployed**. The infrastructure repo (`datastreamapp/infrastructure`) was never updated to consume v4.0.0 or v4.0.1 — all 46 lambda module references still point to `v3.2.0`.
+
+**Evidence:**
+
+| Source | Constraint | Actual Version |
+|--------|-----------|----------------|
+| `infrastructure/terraform/environments/core/versions.tf:7` | `~> 5.0` | — |
+| `infrastructure/.terraform.lock.hcl` | `>= 4.0.0, >= 5.0.0, ~> 5.0` | `v5.100.0` |
+| `terraform version` (development workspace) | — | `hashicorp/aws v5.100.0` |
+| All environments (dev, staging, prod) share same `versions.tf` | `~> 5.0` | `v5.100.0` |
+
+**Module version usage in infrastructure repo:**
+
+| Module Version | References | Status |
+|---------------|-----------|--------|
+| `v3.2.0` | 46 | Active — all lambda modules |
+| `v3.0.2` | 4 | Active — lambda-layer modules |
+| `v4.0.0` | 0 | Never consumed |
+| `v4.0.1` | 0 | Never consumed (current master) |
+
+**Rationale:** The v4.2.0 changes (`artifact_source`, count guards, `source_code_hash`) use no provider 6-specific features. Setting `>= 5.0` allows the infrastructure repo to consume v4.2.0 without a provider upgrade. The provider 6 upgrade is a separate effort.
+
