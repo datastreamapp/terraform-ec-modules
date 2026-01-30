@@ -30,6 +30,29 @@ variable "signer_profile_name" {
   type = string
 }
 
+# CI/CD Artifact Source (v4.2.0)
+variable "artifact_source" {
+  description = "Where Lambda layer artifacts come from: 'local' builds ZIP via archive_file (default), 'cicd' uses pre-built signed S3 artifact"
+  type        = string
+  default     = "local"
+  validation {
+    condition     = contains(["local", "cicd"], var.artifact_source)
+    error_message = "artifact_source must be 'local' or 'cicd'."
+  }
+}
+
+variable "artifact_s3_key" {
+  description = "Pre-built signed S3 key for the Lambda layer artifact (required when artifact_source = 'cicd')"
+  type        = string
+  default     = null
+}
+
+variable "artifact_hash" {
+  description = "Source code hash for change detection (required when artifact_source = 'cicd', maps to source_code_hash)"
+  type        = string
+  default     = null
+}
+
 # Layer
 variable "license_info" {
   type = string

@@ -13,4 +13,4 @@
 *.iml
 
 # OS
-.DS_Store
+.DS_Store.terraform.lock.hcl
