@@ -208,6 +208,22 @@ run "image_mode_skips_all_zip_resources" {
   }
 }
 
+# --- Negative: local mode must NOT set source_code_hash ---
+
+run "local_mode_no_source_code_hash" {
+  command = plan
+
+  variables {
+    artifact_source = "local"
+    artifact_hash   = "should-not-appear"
+  }
+
+  assert {
+    condition     = aws_lambda_function.lambda.source_code_hash != "should-not-appear"
+    error_message = "source_code_hash must not use artifact_hash in local mode"
+  }
+}
+
 # --- Test 5: Validation rejects invalid artifact_source ---
 
 run "invalid_artifact_source_rejected" {
