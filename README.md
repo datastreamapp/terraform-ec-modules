@@ -17,6 +17,10 @@ If making changes to volumes: https://www.terraform.io/docs/commands/taint.html
 ## ECS
 
 
+## Documentation
+
+- [Decisions Log](docs/DECISIONS.md)
+
 ## Authors
 - [Kiril Kirov](https://github.com/kkirov)
 - [will Farrell](https://github.com/willfarrell)
