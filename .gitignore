@@ -16,4 +16,5 @@
 *.iml
 
 # OS
-.DS_Store.terraform.lock.hcl
+.DS_Store
+.terraform.lock.hcl
