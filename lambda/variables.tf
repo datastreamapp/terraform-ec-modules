@@ -144,7 +144,7 @@ variable "signer_profile_name" {
   default = null
 }
 
-# CI/CD Artifact Source (v4.2.0)
+# CI/CD Artifact Source
 variable "artifact_source" {
   description = "Where Lambda artifacts come from: 'local' builds ZIP via archive_file (default), 'cicd' uses pre-built signed S3 artifact"
   type        = string

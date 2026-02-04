@@ -189,6 +189,7 @@ run "image_mode_skips_all_zip_resources" {
     package_type    = "Image"
     image_uri       = "123456789.dkr.ecr.ca-central-1.amazonaws.com/test:latest"
     artifact_source = "cicd"
+    artifact_s3_key = "signed/test-lambda-abc123.zip"
     artifact_hash   = "abc123hash"
   }
 
@@ -218,13 +219,44 @@ run "local_mode_no_source_code_hash" {
     artifact_hash   = "should-not-appear"
   }
 
+  # Mock providers assign synthetic values to string attributes even when the
+  # expression evaluates to null, so we cannot assert == null here. Instead,
+  # verify the artifact_hash variable value is not passed through.
   assert {
     condition     = aws_lambda_function.lambda.source_code_hash != "should-not-appear"
     error_message = "source_code_hash must not use artifact_hash in local mode"
   }
 }
 
-# --- Test 5: Validation rejects invalid artifact_source ---
+# --- Test 5: Precondition rejects cicd mode without required variables ---
+
+run "cicd_mode_rejects_missing_artifact_s3_key" {
+  command = plan
+
+  variables {
+    artifact_source = "cicd"
+    artifact_hash   = "abc123hash"
+  }
+
+  expect_failures = [
+    aws_lambda_function.lambda,
+  ]
+}
+
+run "cicd_mode_rejects_missing_artifact_hash" {
+  command = plan
+
+  variables {
+    artifact_source = "cicd"
+    artifact_s3_key = "signed/test-lambda-abc123.zip"
+  }
+
+  expect_failures = [
+    aws_lambda_function.lambda,
+  ]
+}
+
+# --- Test 6: Validation rejects invalid artifact_source ---
 
 run "invalid_artifact_source_rejected" {
   command = plan
