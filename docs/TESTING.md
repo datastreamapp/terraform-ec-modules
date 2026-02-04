@@ -37,9 +37,12 @@ tests/artifact_source.tftest.hcl... in progress
   run "cicd_mode_s3_key_from_variable"... pass
   run "cicd_mode_sets_source_code_hash"... pass
   run "image_mode_skips_all_zip_resources"... pass
+  run "local_mode_no_source_code_hash"... pass
+  run "cicd_mode_rejects_missing_artifact_s3_key"... pass
+  run "cicd_mode_rejects_missing_artifact_hash"... pass
   run "invalid_artifact_source_rejected"... pass
 
-Success! 11 passed, 0 failed.
+Success! 14 passed, 0 failed.
 ```
 
 ---
@@ -48,7 +51,7 @@ Success! 11 passed, 0 failed.
 
 | Module | Test File | Tests | Coverage |
 |--------|-----------|-------|----------|
-| `lambda` | `tests/artifact_source.tftest.hcl` | 11 | `artifact_source` variable: local mode, cicd mode, image mode, validation |
+| `lambda` | `tests/artifact_source.tftest.hcl` | 14 | `artifact_source` variable: local mode, cicd mode, image mode, validation, precondition rejection |
 | `lambda-layer` | — | 0 | No tests yet |
 | `lambda-dlq` | — | 0 | No tests yet |
 
@@ -56,7 +59,7 @@ Success! 11 passed, 0 failed.
 
 ## Test Details: `lambda/tests/artifact_source.tftest.hcl`
 
-Tests the `artifact_source` variable introduced in v4.2.0.
+Tests the `artifact_source` variable and its preconditions.
 
 ### What's Tested
 
@@ -72,7 +75,10 @@ Tests the `artifact_source` variable introduced in v4.2.0.
 | 8 | `cicd_mode_s3_key_from_variable` | cicd | `s3_key` = `artifact_s3_key` variable |
 | 9 | `cicd_mode_sets_source_code_hash` | cicd | `source_code_hash` = `artifact_hash` variable |
 | 10 | `image_mode_skips_all_zip_resources` | cicd+Image | All ZIP resources skipped |
-| 11 | `invalid_artifact_source_rejected` | invalid | Validation error |
+| 11 | `local_mode_no_source_code_hash` | local | `source_code_hash` not passed through |
+| 12 | `cicd_mode_rejects_missing_artifact_s3_key` | cicd | Precondition rejects missing `artifact_s3_key` |
+| 13 | `cicd_mode_rejects_missing_artifact_hash` | cicd | Precondition rejects missing `artifact_hash` |
+| 14 | `invalid_artifact_source_rejected` | invalid | Validation error |
 
 ### Test Fixtures
 
@@ -91,6 +97,8 @@ All tests use `mock_provider` blocks — no real AWS calls are made. Key mocks:
 - `aws_iam_role` / `aws_iam_policy` — returns valid ARNs
 - `aws_signer_signing_job` — returns `signed_object` with S3 path
 - `archive` — fully mocked (no file system operations)
+
+**Limitation:** Mock providers assign synthetic values to string attributes even when the configuration expression evaluates to `null`. This means `== null` assertions on planned string attributes will fail. For example, `local_mode_no_source_code_hash` asserts `!= "should-not-appear"` instead of `== null` because the mock provider generates a random string for `source_code_hash`.
 
 ---
 

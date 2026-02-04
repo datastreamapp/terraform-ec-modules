@@ -61,3 +61,28 @@ Provider compatibility:
 | 6.x (future) | Removed — errors | Works |
 
 Impact: Without this revert, any consumer using AWS provider 5.x would get `Unsupported attribute` errors when referencing the module at v4.0.1+. This explains why v4.0.0/v4.0.1 were never consumed by the infrastructure repo. The deprecation warning on `.name` is accepted until the provider 6 upgrade, which is a separate effort.
+
+---
+
+### Preconditions for CI/CD Mode Validation (2026-02-04)
+Decision: Added `lifecycle.precondition` blocks on `aws_lambda_function.lambda` to validate required variables in cicd mode.
+
+Finding: Without preconditions, a user could set `artifact_source = "cicd"` while omitting `artifact_s3_key` or `artifact_hash`. This would result in confusing AWS API errors at apply time (null `s3_key`) or silent deployment failures (`source_code_hash = null` causes Lambda to skip code updates when the S3 object changes).
+
+Preconditions added:
+
+| Precondition | Condition | Failure Mode Without It |
+|-------------|-----------|------------------------|
+| `artifact_s3_key` required in cicd mode | `artifact_source != "cicd" \|\| artifact_s3_key != null` | AWS API error at apply — null S3 key |
+| `artifact_hash` required in cicd+Zip mode | `artifact_source != "cicd" \|\| package_type != "Zip" \|\| artifact_hash != null` | Silent failure — deploys succeed but code doesn't update |
+
+Rationale: Preconditions run during `terraform plan`, giving users clear error messages before any infrastructure changes are attempted. The second failure mode (silent code skip) is the most dangerous — deploys appear successful but the function runs stale code.
+
+---
+
+### Description Guard for CI/CD Mode (2026-02-04)
+Decision: Hardened the `locals.tf` description condition from `var.description != ""` to `var.description != null && var.description != ""`.
+
+Finding: The `description` variable defaults to `null`. In Terraform, `null != ""` evaluates to `true`, so the `file()` call to read `package.json` is short-circuited by accident. However, if a user explicitly passes `description = ""`, Terraform would attempt to read `package.json` from `source_dir`, which may not exist in a pure CI/CD context where source code is not present locally.
+
+Impact: Prevents a confusing `file not found` error when `description = ""` is explicitly set in cicd mode.
