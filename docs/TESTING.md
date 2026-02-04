@@ -52,7 +52,7 @@ Success! 14 passed, 0 failed.
 | Module | Test File | Tests | Coverage |
 |--------|-----------|-------|----------|
 | `lambda` | `tests/artifact_source.tftest.hcl` | 14 | `artifact_source` variable: local mode, cicd mode, image mode, validation, precondition rejection |
-| `lambda-layer` | `tests/artifact_source.tftest.hcl` | 11 | `artifact_source` variable: local mode, cicd mode, negative, validation |
+| `lambda-layer` | `tests/artifact_source.tftest.hcl` | 13 | `artifact_source` variable: local mode, cicd mode, negative, validation, precondition rejection |
 | `lambda-dlq` | — | 0 | No tests yet |
 
 ---
@@ -120,7 +120,9 @@ Tests the `artifact_source` variable for lambda layers.
 | 8 | `cicd_mode_s3_key_from_variable` | cicd | `s3_key` = `artifact_s3_key` variable |
 | 9 | `cicd_mode_sets_source_code_hash` | cicd | `source_code_hash` = `artifact_hash` variable |
 | 10 | `local_mode_no_source_code_hash` | local | `source_code_hash` not set from `artifact_hash` |
-| 11 | `invalid_artifact_source_rejected` | invalid | Validation error |
+| 11 | `cicd_mode_rejects_missing_artifact_s3_key` | cicd | Precondition rejects missing `artifact_s3_key` |
+| 12 | `cicd_mode_rejects_missing_artifact_hash` | cicd | Precondition rejects missing `artifact_hash` |
+| 13 | `invalid_artifact_source_rejected` | invalid | Validation error |
 
 ### Test Fixtures
 
@@ -135,6 +137,8 @@ Tests use minimal fixtures in `tests/fixtures/`:
 - `aws_signer_signing_job` — returns `signed_object` with S3 path
 - `aws_lambda_layer_version` — returns `version = 1` (required numeric type)
 - `archive` — fully mocked
+
+**Limitation:** Mock providers assign synthetic values to string attributes even when the configuration expression evaluates to `null`. This means `== null` assertions on planned string attributes will fail. For example, `local_mode_no_source_code_hash` asserts `!= "should-not-appear"` instead of `== null` because the mock provider generates a random string for `source_code_hash`.
 
 ---
 

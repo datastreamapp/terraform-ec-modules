@@ -52,6 +52,17 @@ resource "aws_lambda_layer_version" "layer" {
 
   #compatible_architectures = var.compatible_architectures # CompatibleArchitectures are not supported in ca-central-1. Please remove the CompatibleArchitectures value from your request and try again
   compatible_runtimes = var.compatible_runtimes
+
+  lifecycle {
+    precondition {
+      condition     = var.artifact_source != "cicd" || var.artifact_s3_key != null
+      error_message = "artifact_s3_key is required when artifact_source = 'cicd'."
+    }
+    precondition {
+      condition     = var.artifact_source != "cicd" || var.artifact_hash != null
+      error_message = "artifact_hash is required when artifact_source = 'cicd'."
+    }
+  }
 }
 
 resource "aws_lambda_layer_version_permission" "layer" {

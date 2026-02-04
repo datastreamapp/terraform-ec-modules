@@ -12,11 +12,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 - **lambda**: `artifact_source` variable (`"local"` | `"cicd"`) for CI/CD pre-built artifact support
 - **lambda**: `artifact_s3_key`, `artifact_hash` variables for cicd mode
 - **lambda**: `source_code_hash` on `aws_lambda_function` for cicd change detection
-- **lambda**: 12 tests in `lambda/tests/artifact_source.tftest.hcl` (10 positive, 2 negative)
+- **lambda**: 14 tests in `lambda/tests/artifact_source.tftest.hcl` (10 positive, 4 negative)
 - **lambda-layer**: `artifact_source` variable (`"local"` | `"cicd"`) for CI/CD pre-built artifact support
 - **lambda-layer**: `artifact_s3_key`, `artifact_hash` variables for cicd mode
 - **lambda-layer**: `source_code_hash` on `aws_lambda_layer_version` for cicd change detection
-- **lambda-layer**: 11 tests in `lambda-layer/tests/artifact_source.tftest.hcl` (9 positive, 2 negative)
+- **lambda-layer**: 13 tests in `lambda-layer/tests/artifact_source.tftest.hcl` (9 positive, 4 negative)
 - `docs/DECISIONS.md` — technical decisions log
 - `docs/TESTING.md` — test inventory and guide
 - `docs/RETROSPECTIVE.md` — epic retrospective template
