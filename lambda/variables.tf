@@ -144,6 +144,30 @@ variable "signer_profile_name" {
   default = null
 }
 
+# CI/CD Artifact Source
+variable "artifact_source" {
+  description = "Where Lambda artifacts come from: 'local' builds ZIP via archive_file (default), 'cicd' uses pre-built signed S3 artifact"
+  type        = string
+  default     = "local"
+
+  validation {
+    condition     = contains(["local", "cicd"], var.artifact_source)
+    error_message = "artifact_source must be 'local' or 'cicd'."
+  }
+}
+
+variable "artifact_s3_key" {
+  description = "Pre-built signed S3 key for the Lambda artifact (required when artifact_source = 'cicd')"
+  type        = string
+  default     = null
+}
+
+variable "artifact_hash" {
+  description = "Source code hash for change detection (required when artifact_source = 'cicd', maps to source_code_hash)"
+  type        = string
+  default     = null
+}
+
 # Lambda@Edge Doesn't support DQL
 variable "dead_letter_arn" {
   description = "sns or sqs arn. need to apply sns:Publish or sqs:SendMessage to iam"

@@ -1,12 +1,12 @@
 data "archive_file" "lambda_file" {
-  count       = var.package_type == "Zip" && var.source_file != "" ? 1 : 0
+  count       = var.package_type == "Zip" && var.source_file != "" && var.artifact_source == "local" ? 1 : 0
   type        = "zip"
   source_file = "${var.source_dir}/${var.source_file}"
   output_path = "/tmp/${var.name}.zip"
 }
 
 data "archive_file" "lambda_dir" {
-  count       = var.package_type == "Zip" && var.source_file == "" ? 1 : 0
+  count       = var.package_type == "Zip" && var.source_file == "" && var.artifact_source == "local" ? 1 : 0
   type        = "zip"
   source_dir  = var.source_dir
   excludes    = var.excludes
@@ -14,7 +14,7 @@ data "archive_file" "lambda_dir" {
 }
 
 resource "aws_s3_object" "lambda" {
-  count                  = var.package_type == "Zip" && var.s3_bucket != "" ? 1 : 0
+  count                  = var.package_type == "Zip" && var.s3_bucket != "" && var.artifact_source == "local" ? 1 : 0
   bucket                 = var.s3_bucket
   key                    = "unsigned/${var.name}-${var.source_file != "" ? data.archive_file.lambda_file[0].output_md5 : data.archive_file.lambda_dir[0].output_md5}.zip"
   source                 = var.source_file != "" ? data.archive_file.lambda_file[0].output_path : data.archive_file.lambda_dir[0].output_path
@@ -26,7 +26,7 @@ resource "aws_s3_object" "lambda" {
 }
 
 resource "aws_signer_signing_job" "lambda" {
-  count        = var.package_type == "Zip" ? 1 : 0
+  count        = var.package_type == "Zip" && var.artifact_source == "local" ? 1 : 0
   profile_name = var.signer_profile_name
 
   source {
@@ -53,7 +53,7 @@ resource "aws_signer_signing_job" "lambda" {
 locals {
   image_uri               = var.package_type == "Image" ? var.image_uri : null
   s3_bucket               = var.package_type == "Zip" ? var.s3_bucket : null
-  s3_key                  = var.package_type == "Zip" ? aws_signer_signing_job.lambda[0].signed_object[0]["s3"][0]["key"] : null
+  s3_key                  = var.package_type == "Zip" ? (var.artifact_source == "cicd" ? var.artifact_s3_key : aws_signer_signing_job.lambda[0].signed_object[0]["s3"][0]["key"]) : null
   handler                 = var.package_type == "Zip" ? var.handler : null
   layers                  = var.package_type == "Zip" ? var.layers : null
   runtime                 = var.package_type == "Zip" ? var.runtime : null
@@ -72,6 +72,7 @@ resource "aws_lambda_function" "lambda" {
   image_uri                      = local.image_uri
   s3_bucket                      = local.s3_bucket
   s3_key                         = local.s3_key
+  source_code_hash               = var.artifact_source == "cicd" && var.package_type == "Zip" ? var.artifact_hash : null
   code_signing_config_arn        = local.code_signing_config_arn
   handler                        = local.handler
   layers                         = local.layers
@@ -118,6 +119,14 @@ resource "aws_lambda_function" "lambda" {
   }
 
   lifecycle {
+    precondition {
+      condition     = var.artifact_source != "cicd" || var.artifact_s3_key != null
+      error_message = "artifact_s3_key is required when artifact_source = 'cicd'."
+    }
+    precondition {
+      condition     = var.artifact_source != "cicd" || var.package_type != "Zip" || var.artifact_hash != null
+      error_message = "artifact_hash is required when artifact_source = 'cicd' and package_type = 'Zip'."
+    }
     ignore_changes = [
       code_signing_config_arn
     ]

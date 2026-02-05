@@ -1,6 +1,9 @@
 #  Local .terraform directories
 **/.terraform/*
 
+# Lock files — not committed for shared modules; consumers bring their own
+.terraform.lock.hcl
+
 # .tfstate files
 *.tfstate
 *.tfstate.*
