@@ -20,6 +20,7 @@ If making changes to volumes: https://www.terraform.io/docs/commands/taint.html
 ## Documentation
 
 - [Changelog](CHANGELOG.md)
+- [Upgrade Guide](docs/UPGRADE.md)
 - [Decisions Log](docs/DECISIONS.md)
 - [Testing Guide](docs/TESTING.md)
 - [Retrospective](docs/RETROSPECTIVE.md)

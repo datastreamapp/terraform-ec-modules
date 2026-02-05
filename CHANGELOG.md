@@ -6,7 +6,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
-## [Unreleased] — v4.2.0
+## [v4.2.0] — 2026-02-05
 
 ### Added
 - **lambda**: `artifact_source` variable (`"local"` | `"cicd"`) for CI/CD pre-built artifact support
