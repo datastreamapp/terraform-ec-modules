@@ -14,7 +14,7 @@ Reference: [HashiCorp — Dependency Lock File](https://developer.hashicorp.com/
 ---
 
 ### AWS Provider Constraint: >= 5.0 (2026-01-29)
-Decision: Relaxed AWS provider constraint from `>= 6.0` to `>= 5.0` for `lambda` and `lambda-dlq` modules.
+Decision: Relaxed AWS provider constraint from `>= 6.0` to `>= 5.0` for `lambda`, `lambda-layer`, and `lambda-dlq` modules.
 
 Finding: The `v4.0.0` tag (commit `b098cfc`) bumped all modules to `>= 6.0`, but this was never deployed. The infrastructure repo (`datastreamapp/infrastructure`) was never updated to consume v4.0.0 or v4.0.1 — all 46 lambda module references still point to `v3.2.0`.
 

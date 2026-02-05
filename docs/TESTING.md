@@ -17,8 +17,8 @@ No AWS credentials required — all tests use mock providers.
 ## Quick Start
 
 ```bash
-# Run all tests for the lambda module
-cd lambda
+# Run tests for a module
+cd lambda          # or lambda-layer
 terraform init
 terraform test
 ```
@@ -52,7 +52,7 @@ Success! 14 passed, 0 failed.
 | Module | Test File | Tests | Coverage |
 |--------|-----------|-------|----------|
 | `lambda` | `tests/artifact_source.tftest.hcl` | 14 | `artifact_source` variable: local mode, cicd mode, image mode, validation, precondition rejection |
-| `lambda-layer` | — | 0 | No tests yet |
+| `lambda-layer` | `tests/artifact_source.tftest.hcl` | 13 | `artifact_source` variable: local mode, cicd mode, negative, validation, precondition rejection |
 | `lambda-dlq` | — | 0 | No tests yet |
 
 ---
@@ -97,6 +97,46 @@ All tests use `mock_provider` blocks — no real AWS calls are made. Key mocks:
 - `aws_iam_role` / `aws_iam_policy` — returns valid ARNs
 - `aws_signer_signing_job` — returns `signed_object` with S3 path
 - `archive` — fully mocked (no file system operations)
+
+**Limitation:** Mock providers assign synthetic values to string attributes even when the configuration expression evaluates to `null`. This means `== null` assertions on planned string attributes will fail. For example, `local_mode_no_source_code_hash` asserts `!= "should-not-appear"` instead of `== null` because the mock provider generates a random string for `source_code_hash`.
+
+---
+
+## Test Details: `lambda-layer/tests/artifact_source.tftest.hcl`
+
+Tests the `artifact_source` variable for lambda layers.
+
+### What's Tested
+
+| # | Test | Mode | Asserts |
+|---|------|------|---------|
+| 1 | `local_mode_creates_archive_file` | local | `archive_file` count = 1 |
+| 2 | `local_mode_creates_s3_object` | local | `aws_s3_object` count = 1 |
+| 3 | `local_mode_creates_signing_job` | local | `aws_signer_signing_job` count = 1 |
+| 4 | `local_mode_s3_key_from_signing_job` | local | `s3_key` = signing job output |
+| 5 | `cicd_mode_skips_archive_file` | cicd | `archive_file` count = 0 |
+| 6 | `cicd_mode_skips_s3_object` | cicd | `aws_s3_object` count = 0 |
+| 7 | `cicd_mode_skips_signing_job` | cicd | `aws_signer_signing_job` count = 0 |
+| 8 | `cicd_mode_s3_key_from_variable` | cicd | `s3_key` = `artifact_s3_key` variable |
+| 9 | `cicd_mode_sets_source_code_hash` | cicd | `source_code_hash` = `artifact_hash` variable |
+| 10 | `local_mode_no_source_code_hash` | local | `source_code_hash` not set from `artifact_hash` |
+| 11 | `cicd_mode_rejects_missing_artifact_s3_key` | cicd | Precondition rejects missing `artifact_s3_key` |
+| 12 | `cicd_mode_rejects_missing_artifact_hash` | cicd | Precondition rejects missing `artifact_hash` |
+| 13 | `invalid_artifact_source_rejected` | invalid | Validation error |
+
+### Test Fixtures
+
+Tests use minimal fixtures in `tests/fixtures/`:
+
+| File | Purpose |
+|------|---------|
+| `nodejs/node_modules/index.js` | Minimal placeholder for layer content |
+
+### Mock Providers
+
+- `aws_signer_signing_job` — returns `signed_object` with S3 path
+- `aws_lambda_layer_version` — returns `version = 1` (required numeric type)
+- `archive` — fully mocked
 
 **Limitation:** Mock providers assign synthetic values to string attributes even when the configuration expression evaluates to `null`. This means `== null` assertions on planned string attributes will fail. For example, `local_mode_no_source_code_hash` asserts `!= "should-not-appear"` instead of `== null` because the mock provider generates a random string for `source_code_hash`.
 
