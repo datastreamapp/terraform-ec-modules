@@ -9,8 +9,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 ## [v4.2.1] — 2026-05-05
 
 ### Fixed
-- **lambda**: `aws_s3_object.lambda` — add `lifecycle { ignore_changes = [object_lock_mode, object_lock_retain_until_date] }` to prevent recurring drift when S3 bucket has a default Object Lock GOVERNANCE retention policy. Without this, every plan after object creation computes drift on the bucket-applied retention attributes and attempts `PutObjectRetention` to clear them; AWS rejects the call with `405 MethodNotAllowed`, blocking apply. The module does not manage retention — the bucket's default policy owns it. Fixes #1846.
-- **lambda-layer**: same fix on `aws_s3_object.layer` (`lambda-layer/lambda.tf`). Fixes #1846.
+- **lambda**: `aws_s3_object.lambda` — add `lifecycle { ignore_changes = [object_lock_mode, object_lock_retain_until_date] }` to prevent recurring drift when S3 bucket has a default Object Lock GOVERNANCE retention policy. Without this, every plan after object creation computes drift on the bucket-applied retention attributes and attempts `PutObjectRetention` to clear them; AWS rejects the call with `405 MethodNotAllowed`, blocking apply. The module does not manage retention — the bucket's default policy owns it.
+- **lambda-layer**: same fix on `aws_s3_object.layer` (`lambda-layer/lambda.tf`).
 
 ---
 
