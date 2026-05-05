@@ -14,6 +14,12 @@ resource "aws_s3_object" "layer" {
   checksum_algorithm     = "SHA256"
   force_destroy          = true # For Object Lock
   depends_on             = [data.archive_file.layer]
+
+  lifecycle {
+    # Bucket default retention policy auto-applies object_lock_mode + object_lock_retain_until_date
+    # on create. The module doesn't manage retention — ignore drift on these attributes.
+    ignore_changes = [object_lock_mode, object_lock_retain_until_date]
+  }
 }
 
 resource "aws_signer_signing_job" "layer" {

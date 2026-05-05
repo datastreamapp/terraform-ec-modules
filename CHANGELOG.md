@@ -6,6 +6,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v4.2.1] — 2026-05-05
+
+### Fixed
+- **lambda, lambda-layer**: ignore `object_lock_mode` and `object_lock_retain_until_date` on `aws_s3_object` resources. When the deployment bucket has a default Object Lock retention policy, these attributes are bucket-managed and should not be tracked by the module.
+
+---
+
 ## [v4.2.0] — 2026-02-05
 
 ### Added
