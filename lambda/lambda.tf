@@ -23,6 +23,12 @@ resource "aws_s3_object" "lambda" {
   depends_on             = [
     data.archive_file.lambda_file, data.archive_file.lambda_dir
   ]
+
+  lifecycle {
+    # Bucket default retention policy auto-applies object_lock_mode + object_lock_retain_until_date
+    # on create. The module doesn't manage retention — ignore drift on these attributes.
+    ignore_changes = [object_lock_mode, object_lock_retain_until_date]
+  }
 }
 
 resource "aws_signer_signing_job" "lambda" {
