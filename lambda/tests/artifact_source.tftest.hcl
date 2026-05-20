@@ -243,12 +243,40 @@ run "cicd_mode_rejects_missing_artifact_s3_key" {
   ]
 }
 
+run "cicd_mode_rejects_empty_artifact_s3_key" {
+  command = plan
+
+  variables {
+    artifact_source = "cicd"
+    artifact_s3_key = ""
+    artifact_hash   = "abc123hash"
+  }
+
+  expect_failures = [
+    aws_lambda_function.lambda,
+  ]
+}
+
 run "cicd_mode_rejects_missing_artifact_hash" {
   command = plan
 
   variables {
     artifact_source = "cicd"
     artifact_s3_key = "signed/test-lambda-abc123.zip"
+  }
+
+  expect_failures = [
+    aws_lambda_function.lambda,
+  ]
+}
+
+run "cicd_mode_rejects_empty_artifact_hash" {
+  command = plan
+
+  variables {
+    artifact_source = "cicd"
+    artifact_s3_key = "signed/test-lambda-abc123.zip"
+    artifact_hash   = ""
   }
 
   expect_failures = [

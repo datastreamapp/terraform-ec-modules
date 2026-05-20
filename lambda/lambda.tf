@@ -126,12 +126,12 @@ resource "aws_lambda_function" "lambda" {
 
   lifecycle {
     precondition {
-      condition     = var.artifact_source != "cicd" || var.artifact_s3_key != null
-      error_message = "artifact_s3_key is required when artifact_source = 'cicd'."
+      condition     = var.artifact_source != "cicd" || (var.artifact_s3_key != null && var.artifact_s3_key != "")
+      error_message = "artifact_s3_key must be a non-empty string when artifact_source = 'cicd'."
     }
     precondition {
-      condition     = var.artifact_source != "cicd" || var.package_type != "Zip" || var.artifact_hash != null
-      error_message = "artifact_hash is required when artifact_source = 'cicd' and package_type = 'Zip'."
+      condition     = var.artifact_source != "cicd" || var.package_type != "Zip" || (var.artifact_hash != null && var.artifact_hash != "")
+      error_message = "artifact_hash must be a non-empty string when artifact_source = 'cicd' and package_type = 'Zip'."
     }
     ignore_changes = [
       code_signing_config_arn
