@@ -40,7 +40,7 @@ resource "aws_cloudwatch_dashboard" "main" {
           ],
           "view" : "bar",
           "stacked" : false,
-          "region" : data.aws_region.current.name,
+          "region" : data.aws_region.current.region,
           "stat" : "PR(247.06:321.18)",
           "period" : 900,
           "setPeriodToTimeRange" : true,
@@ -60,7 +60,7 @@ resource "aws_cloudwatch_dashboard" "main" {
           "sparkline" : false,
           "view" : "singleValue",
           "stacked" : true,
-          "region" : data.aws_region.current.name,
+          "region" : data.aws_region.current.region,
           "stat" : "Sum",
           "period" : 900,
           "title" : "",
@@ -81,7 +81,7 @@ resource "aws_cloudwatch_dashboard" "main" {
           "sparkline" : false,
           "view" : "singleValue",
           "stacked" : true,
-          "region" : data.aws_region.current.name,
+          "region" : data.aws_region.current.region,
           "stat" : "Sum",
           "period" : 900,
           "setPeriodToTimeRange" : true,
@@ -110,7 +110,7 @@ resource "aws_cloudwatch_dashboard" "main" {
           "sparkline" : true,
           "view" : "timeSeries",
           "stacked" : false,
-          "region" : data.aws_region.current.name,
+          "region" : data.aws_region.current.region,
           "stat" : "Sum",
           "period" : 900,
           "setPeriodToTimeRange" : false,
@@ -130,7 +130,7 @@ resource "aws_cloudwatch_dashboard" "main" {
         "type" : "log",
         "properties" : {
           "query" : "SOURCE '/aws/lambda/${aws_lambda_function.lambda.id}' | filter ${var.log_severity_property_name} = 'ERROR'\n| stats count(*) as total by coalesce(${var.log_http_status_code_property_name}, 'unknown')\n| sort ${var.log_http_status_code_property_name} asc",
-          "region" : data.aws_region.current.name,
+          "region" : data.aws_region.current.region,
           "stacked" : false,
           "title" : "Error Status Codes",
           "view" : "bar"
@@ -144,7 +144,7 @@ resource "aws_cloudwatch_dashboard" "main" {
         "type" : "log",
         "properties" : {
           "query" : "SOURCE '/aws/lambda/${aws_lambda_function.lambda.id}' | fields @message\n| filter errorType = 'error' or ${var.log_severity_property_name} = 'ERROR'\n| sort @timestamp desc",
-          "region" : data.aws_region.current.name,
+          "region" : data.aws_region.current.region,
           "title" : "Errors",
           "view" : "table"
         }
