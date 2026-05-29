@@ -94,7 +94,7 @@ resource "aws_lambda_function" "lambda" {
       1
     ]
     content {
-      target_arn = var.dead_letter_arn != null ? var.dead_letter_arn : module.lambda-dlq["main"].arn
+      target_arn = var.create_dlq ? module.lambda-dlq[0].arn : var.dead_letter_arn
     }
   }
 

@@ -175,6 +175,12 @@ variable "dead_letter_arn" {
   default     = null
 }
 
+variable "create_dlq" {
+  description = "Set to false when providing a pre-existing dead_letter_arn. Controls whether the module creates its own internal DLQ. Required because AWS provider v6 rejects count/for_each conditioned on computed resource attributes (dead_letter_arn may receive a computed ARN that is unknown at plan time)."
+  type        = bool
+  default     = true
+}
+
 # Lambda@Edge Doesn't support extra process.env
 variable "env" {
   type    = map(string)
