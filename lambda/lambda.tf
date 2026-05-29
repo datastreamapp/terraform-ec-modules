@@ -94,7 +94,7 @@ resource "aws_lambda_function" "lambda" {
       1
     ]
     content {
-      target_arn = try(module.lambda-dlq[0].arn, var.dead_letter_arn)
+      target_arn = var.create_dlq ? module.lambda-dlq[0].arn : var.dead_letter_arn
     }
   }
 
@@ -132,6 +132,10 @@ resource "aws_lambda_function" "lambda" {
     precondition {
       condition     = var.artifact_source != "cicd" || var.package_type != "Zip" || (var.artifact_hash != null && var.artifact_hash != "")
       error_message = "artifact_hash must be a non-empty string when artifact_source = 'cicd' and package_type = 'Zip'."
+    }
+    precondition {
+      condition     = !(var.create_dlq && var.dead_letter_arn != null)
+      error_message = "When supplying dead_letter_arn, also set create_dlq = false. Setting both create_dlq = true and dead_letter_arn creates an unused internal DLQ and ignores the supplied ARN."
     }
     ignore_changes = [
       code_signing_config_arn
