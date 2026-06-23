@@ -29,7 +29,7 @@ resource "aws_signer_signing_job" "layer" {
   source {
     s3 {
       bucket  = var.s3_bucket
-      key     = aws_s3_object.layer[0].id
+      key     = aws_s3_object.layer[0].key
       version = aws_s3_object.layer[0].version_id
     }
   }
